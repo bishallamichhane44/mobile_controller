@@ -19,12 +19,8 @@ async def handle_client(websocket, path):
 
 async def main():
     server = await websockets.serve(handle_client, "0.0.0.0", 8765)
-    print("WebSocket server started")
+    print(f"WebSocket server started on {server.sockets[0].getsockname()}")
     await server.wait_closed()
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-# To run the server:
-# pip install websockets pyautogui
-# python server.py

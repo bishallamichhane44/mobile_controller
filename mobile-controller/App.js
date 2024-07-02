@@ -1,78 +1,61 @@
-// First, install Expo CLI globally if you haven't already
-// npm install -g expo-cli
-
-// Then, create a new Expo project
-// expo init RemoteMouse
-// cd RemoteMouse
-
-// Install necessary dependencies
-// expo install react-native-gesture-handler expo-sensors react-native-reanimated
-
-// App.js
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Accelerometer } from 'expo-sensors';
-import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, PanResponder } from 'react-native';
 
 export default function App() {
-  const [wsConnection, setWsConnection] = useState(null);
-  const [connected, setConnected] = useState(false);
+  const [status, setStatus] = useState('Disconnected');
+  const ws = useRef(null);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://192.168.1.102:8765');
-    
-    ws.onopen = () => {
-      console.log('Connected to the server');
-      setConnected(true);
-      setWsConnection(ws);
-    };
-
-    ws.onclose = () => {
-      console.log('Disconnected from the server');
-      setConnected(false);
-    };
-
+    connectWebSocket();
     return () => {
-      ws.close();
+      if (ws.current) ws.current.close();
     };
   }, []);
 
-  const onPanGestureEvent = ({ nativeEvent }) => {
-    if (wsConnection) {
-      wsConnection.send(JSON.stringify({
-        type: 'mousemove',
-        x: nativeEvent.translationX,
-        y: nativeEvent.translationY,
-      }));
+  const connectWebSocket = () => {
+    ws.current = new WebSocket('ws://YOUR_IP_ADDRESS:8765');
+    
+    ws.current.onopen = () => setStatus('Connected');
+    ws.current.onclose = () => setStatus('Disconnected');
+    ws.current.onerror = (error) => console.error('WebSocket error:', error);
+  };
+
+  const sendMessage = (msg) => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify(msg));
     }
   };
 
-  const sendClick = (button) => {
-    if (wsConnection) {
-      wsConnection.send(JSON.stringify({
-        type: 'click',
-        button: button,
-      }));
-    }
-  };
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: (_, gestureState) => {
+      sendMessage({
+        type: 'mousemove',
+        x: gestureState.dx,
+        y: gestureState.dy,
+      });
+    },
+  });
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <View style={styles.statusContainer}>
-        <Text>Status: {connected ? 'Connected' : 'Disconnected'}</Text>
-      </View>
-      <PanGestureHandler onGestureEvent={onPanGestureEvent}>
-        <View style={styles.touchpad} />
-      </PanGestureHandler>
+    <View style={styles.container}>
+      <Text style={styles.statusText}>Status: {status}</Text>
+      <View {...panResponder.panHandlers} style={styles.touchpad} />
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => sendClick('left')}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => sendMessage({ type: 'click', button: 'left' })}
+        >
           <Text>Left Click</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => sendClick('right')}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => sendMessage({ type: 'click', button: 'right' })}
+        >
           <Text>Right Click</Text>
         </TouchableOpacity>
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
@@ -83,12 +66,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  statusContainer: {
-    position: 'absolute',
-    top: 40,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
+  statusText: {
+    fontSize: 18,
+    marginBottom: 20,
   },
   touchpad: {
     width: 300,
