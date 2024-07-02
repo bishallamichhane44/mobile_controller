@@ -1,0 +1,19 @@
+npx create-expo-app --template
+cd mobile-controller
+npx expo install react-native-gesture-handler expo-sensors react-native-reanimated
+
+
+
+//to start
+npx expo start
+
+
+
+//to build 
+npx expo build:android
+
+
+//to publish to expo server
+npx expo publish
+
+
