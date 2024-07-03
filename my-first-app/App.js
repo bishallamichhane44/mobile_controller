@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, Button, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import io from "socket.io-client";
-
+import { Accelerometer } from "expo-sensors";
 
 const App = () => {
   const [socket, setSocket] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+  const [tiltY, setTiltY] = useState(0); // Tilt data along Y-axis
 
   useEffect(() => {
-    // Replace with your actual ngrok URL/or websocket url
-    const newSocket = io("YOUR_NGROK_URL_OR_WEBSOCKET_URL");
+    const newSocket = io("https://c6c9-103-156-26-247.ngrok-free.app/");
 
     newSocket.on("connect", () => {
       console.log("Connected to server");
@@ -28,50 +28,37 @@ const App = () => {
 
     setSocket(newSocket);
 
-    return () => newSocket.close();
+    // Set up accelerometer listener
+    Accelerometer.setUpdateInterval(16); // 60 FPS update rate
+    const subscription = Accelerometer.addListener(handleAccelerometerUpdate);
+
+    return () => {
+      newSocket.close();
+      subscription && subscription.remove();
+    };
   }, []);
 
-  const handleButtonPress = (button, state) => {
+  const handleAccelerometerUpdate = ({ y }) => {
+    setTiltY(y); // Assuming y-axis tilt is relevant for left/right steering
+  };
+
+  const sendTiltData = () => {
     if (socket) {
-      socket.emit("button_press", { button, state });
+      socket.emit("tilt_data", { tilt_y: tiltY });
     }
   };
+
+  useEffect(() => {
+    const interval = setInterval(sendTiltData, 1); // Send tilt data every 100ms
+    return () => clearInterval(interval);
+  }, [tiltY]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.connectionStatus}>{connectionStatus}</Text>
       <View style={styles.gamepadArea}>
         <View style={styles.buttonColumn}>
-          <TouchableOpacity
-            style={[styles.button, styles.buttonUp]}
-            onPressIn={() => handleButtonPress('w', true)}
-            onPressOut={() => handleButtonPress('w', false)}
-          >
-            <Text style={styles.buttonText}>W</Text>
-          </TouchableOpacity>
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={styles.button}
-              onPressIn={() => handleButtonPress('a', true)}
-              onPressOut={() => handleButtonPress('a', false)}
-            >
-              <Text style={styles.buttonText}>A</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPressIn={() => handleButtonPress('s', true)}
-              onPressOut={() => handleButtonPress('s', false)}
-            >
-              <Text style={styles.buttonText}>S</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPressIn={() => handleButtonPress('d', true)}
-              onPressOut={() => handleButtonPress('d', false)}
-            >
-              <Text style={styles.buttonText}>D</Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.tiltText}>Tilt Y: {tiltY.toFixed(2)}</Text>
         </View>
       </View>
     </View>
@@ -100,24 +87,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
-  },
-  button: {
-    padding: 30,
-    margin: 10,
-    backgroundColor: "#ccc",
-    borderRadius: 10,
-    transform: [{ rotate: "-90deg" }],
-  },
-  buttonUp: {
-    marginBottom: 20,
-  },
-  buttonText: {
+  tiltText: {
     fontSize: 24,
+    transform: [{ rotate: "-90deg" }],
   },
 });
 
