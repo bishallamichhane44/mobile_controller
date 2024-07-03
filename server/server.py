@@ -44,6 +44,27 @@ def tilt_data(sid, data):
         pyautogui.keyUp('right')
         print(f"{tilt_y} => idle")
 
+
+@sio.event
+def button_press(sid, data):
+    button = data['button']
+    state = data['state']  # True for press, False for release
+    if sid in connected_clients:
+        connected_clients[sid][button] = state
+        # Handle button presses based on connected_clients dictionary
+        if state:  # Button pressed
+            if button == 'up':
+                pyautogui.keyDown('up')
+                print(f"{button} => up")
+            elif button == 'down':
+                pyautogui.keyDown('down')
+                print(f"{button} => down")
+          
+        else:  # Button released
+            if button == 'up':
+                pyautogui.keyUp('up')
+            elif button == 'down':
+                pyautogui.keyUp('down')
 if __name__ == '__main__':
     # Start the server
     eventlet.wsgi.server(eventlet.listen(('localhost', 3000)), app)  # Use localhost for local testing
