@@ -41,42 +41,37 @@ const App = () => {
     <View style={styles.container}>
       <Text style={styles.connectionStatus}>{connectionStatus}</Text>
       <View style={styles.gamepadArea}>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('w', true)}>
-            <Text>W</Text>
+        <View style={styles.buttonColumn}>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonUp]}
+            onPressIn={() => handleButtonPress('w', true)}
+            onPressOut={() => handleButtonPress('w', false)}
+          >
+            <Text style={styles.buttonText}>W</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('a', true)}>
-            <Text>A</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('s', true)}>
-            <Text>S</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('d', true)}>
-            <Text>D</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('up', true)}>
-            <Text>Up</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('down', true)}>
-            <Text>Down</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('left', true)}>
-            <Text>Left</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('right', true)}>
-            <Text>Right</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('button1', true)}>
-            <Text>Button 1</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPressIn={() => handleButtonPress('button2', true)}>
-            <Text>Button 2</Text>
-          </TouchableOpacity>
-          {/* Add more buttons here as needed */}
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={styles.button}
+              onPressIn={() => handleButtonPress('a', true)}
+              onPressOut={() => handleButtonPress('a', false)}
+            >
+              <Text style={styles.buttonText}>A</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPressIn={() => handleButtonPress('s', true)}
+              onPressOut={() => handleButtonPress('s', false)}
+            >
+              <Text style={styles.buttonText}>S</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPressIn={() => handleButtonPress('d', true)}
+              onPressOut={() => handleButtonPress('d', false)}
+            >
+              <Text style={styles.buttonText}>D</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
@@ -88,23 +83,41 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    transform: [{ rotate: "90deg" }],
   },
   connectionStatus: {
-    marginBottom: 20,
+    position: "absolute",
+    top: 10,
     fontSize: 20,
+    transform: [{ rotate: "-90deg" }],
   },
   gamepadArea: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonColumn: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
   },
   button: {
-    padding: 15,
+    padding: 30,
+    margin: 10,
     backgroundColor: "#ccc",
-    borderRadius: 5,
+    borderRadius: 10,
+    transform: [{ rotate: "-90deg" }],
+  },
+  buttonUp: {
+    marginBottom: 20,
+  },
+  buttonText: {
+    fontSize: 24,
   },
 });
 
