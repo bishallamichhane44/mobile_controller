@@ -10,14 +10,14 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.2.1",
-    "expo": "~51.0.14",
+    "expo": "~51.0.17",
     "expo-sensors": "^13.0.9",
     "expo-status-bar": "~1.12.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-native": "0.74.2",
+    "react-native": "^0.74.3",
     "react-native-bluetooth-serial": "^1.0.0-rc1",
-    "react-native-gesture-handler": "^2.17.1",
+    "react-native-gesture-handler": "~2.16.1",
     "react-native-web": "~0.19.10",
     "socket.io-client": "^4.7.5"
   },

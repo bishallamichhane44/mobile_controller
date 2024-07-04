@@ -69,15 +69,15 @@ const App = () => {
         <View style={styles.buttonRow}>
             <TouchableOpacity
               style={styles.button}
-              onPressIn={() => handleButtonPress('up', true)}
-              onPressOut={() => handleButtonPress('up', false)}
+              onPressIn={() => handleButtonPress('a', true)}
+              onPressOut={() => handleButtonPress('a', false)}
             >
               <Text style={styles.buttonText}>A</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.button}
-              onPressIn={() => handleButtonPress('down', true)}
-              onPressOut={() => handleButtonPress('down', false)}
+              onPressIn={() => handleButtonPress('b', true)}
+              onPressOut={() => handleButtonPress('b', false)}
             >
               <Text style={styles.buttonText}>S</Text>
             </TouchableOpacity>
