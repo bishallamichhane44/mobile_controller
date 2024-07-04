@@ -9,7 +9,7 @@ const App = () => {
   const [tiltY, setTiltY] = useState(0); // Tilt data along Y-axis
 
   useEffect(() => {
-    const newSocket = io("https://c6c9-103-156-26-247.ngrok-free.app/");
+    const newSocket = io("https://5e5d-103-156-26-247.ngrok-free.app/");
 
     newSocket.on("connect", () => {
       console.log("Connected to server");
@@ -55,7 +55,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    const interval = setInterval(sendTiltData, 1); // Send tilt data every 100ms
+    const interval = setInterval(sendTiltData); // Send tilt data every 100ms
     return () => clearInterval(interval);
   }, [tiltY]);
 
@@ -113,11 +113,19 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginHorizontal: 20,
   },
+  buttonText: {
+    fontSize: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+    marginHorizontal: 20,
+    transform: [{ rotate: "90deg" }],
+  },
   button: {
-    padding: 30,
+    padding: 60,
     margin: 10,
     backgroundColor: "#ccc",
-    borderRadius: 10,
+    borderRadius: 20,
     transform: [{ rotate: "-90deg" }],
   },
   buttonColumn: {
