@@ -1,3 +1,4 @@
 eventlet
 python-socketio
 pyautogui
+vgamepad
