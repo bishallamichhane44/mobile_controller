@@ -69,8 +69,8 @@ def button_press(sid, data):
                 gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                 print(f"{button} => B")
             elif button == 'x':
-                gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_X)
-                print(f"{button} => X")
+                gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
+                print(f"{button} => R1")
             elif button == 'y':
                 gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_Y)
                 print(f"{button} => Y")
@@ -88,11 +88,12 @@ def button_press(sid, data):
             elif button == 'b':
                 gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
             elif button == 'x':
-                gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_X)
+                gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
             elif button == 'y':
                 gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_Y)
         gamepad.update()
 
 if __name__ == '__main__':
     # Start the server
-    eventlet.wsgi.server(eventlet.listen(('localhost', 3000)), app)  # Use localhost for local testing
+    eventlet.wsgi.server(eventlet.listen(('0.0.0.0', 3000)), app)  # Use localhost for local testing
+

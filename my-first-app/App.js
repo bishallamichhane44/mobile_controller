@@ -9,7 +9,7 @@ const App = () => {
   const [tiltY, setTiltY] = useState(0); // Tilt data along Y-axis
 
   useEffect(() => {
-    const newSocket = io("https://33e7-103-156-26-247.ngrok-free.app/");
+    const newSocket = io(`https://e5a1-103-156-26-247.ngrok-free.app/`);
 
     newSocket.on("connect", () => {
       console.log("Connected to server");
@@ -76,11 +76,19 @@ const App = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.button}
+              onPressIn={() => handleButtonPress('x', true)}
+              onPressOut={() => handleButtonPress('x', false)}
+            >
+              <Text style={styles.buttonText}>X</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
               onPressIn={() => handleButtonPress('b', true)}
               onPressOut={() => handleButtonPress('b', false)}
             >
-              <Text style={styles.buttonText}>S</Text>
+              <Text style={styles.buttonText}>B</Text>
             </TouchableOpacity>
+           
    
           </View>
       </View>
@@ -110,7 +118,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 50,
     marginHorizontal: 20,
   },
   buttonText: {
