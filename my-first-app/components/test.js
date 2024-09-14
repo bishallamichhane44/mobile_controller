@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Socket from "../utils/socket";
+import { getCurrentY } from "../utils/tiltDetection";
 
 
-
-
+const yValue = getCurrentY();
 const GameController = ({ route }) => {
   const address = route.params;
   const [socket, setSocket] = useState(null);
   const [pressedButtons, setPressedButtons] = useState(new Set());
-
+  const [yValue, setYValue] = useState(0);
 
   useEffect(() => {
     setSocket(Socket(address));
@@ -17,13 +17,19 @@ const GameController = ({ route }) => {
   }, []);
 
   const handlePressIn = (button) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (socket) {
+      setPressedButtons(prev => new Set(prev).add(button));
       socket.send(JSON.stringify({ type: "pressIn", value: button }));
     }
   };
 
   const handlePressOut = (button) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
+    if (socket) {
+      setPressedButtons(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(button);
+        return newSet;
+      });
       socket.send(JSON.stringify({ type: "pressOut", value: button }));
     }
   };
@@ -33,7 +39,6 @@ const GameController = ({ route }) => {
       style={[styles.button, style, pressedButtons.has(value) && styles.pressedButton]}
       onPressIn={() => handlePressIn(value)}
       onPressOut={() => handlePressOut(value)}
-      
     >
       <Text style={styles.buttonText}>{label}</Text>
     </TouchableOpacity>
@@ -57,7 +62,7 @@ const GameController = ({ route }) => {
         </View>
 
         
-        <Button label='SPACE' value="space" style={styles.tilt} />
+        <Button label='Tilt:{{yValue}}' value="up" style={styles.tilt} />
 
         <View style={styles.actionButtons}>
           <Button label="Y" value="y" style={styles.dpadVertical} />
@@ -130,10 +135,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-
-
-
+  actionTop: {
+    marginBottom: 20,
+  },
+  actionMiddle: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: '100%',
+    marginBottom: 10,
+  },
+  actionSide: {
+    width: 50,
+    height: 50,
+  },
+  actionBottom: {
+    marginTop: 10,
+  },
   button: {
     backgroundColor: "#ccc",
     borderRadius: 10,
@@ -141,6 +158,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     margin: 5,
+  },
+  pressedButton: {
+    backgroundColor: "#999",
   },
   buttonText: {
     fontSize: 18,

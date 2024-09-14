@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "react-native-orientation-locker": "^1.7.0"
+  }
+}
