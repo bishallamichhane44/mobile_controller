@@ -1,71 +1,70 @@
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { useEffect, useState } from "react";
 import Socket from "../utils/socket";
 
 const GameController = ({ route }) => {
   const address = route.params;
-  console.log(address);
   const [socket, setSocket] = useState(null);
+  const [pressedButtons, setPressedButtons] = useState(new Set());
+
   useEffect(() => {
     setSocket(Socket(address));
-    // return () => socket.close();
+    return () => socket && socket.close();
   }, []);
-  function handlePressIn(data) {
-    if (socket) {
-      console.log(data);
-      socket.send(JSON.stringify({ type: "pressIn", value: data }));
-    }
-  }
-  function handlePressOut(data) {
-    if (socket) {
-      socket.send(JSON.stringify({ type: "pressOut", value: data }));
-    }
-  }
 
-  const Buttons = [
-    ["up", "O"],
-    ["a", "T"],
-    ["left", "X"],
-    ["right", "Y"],
-    ["down", "A"],
-    ["d", "B"],
-  ].map((data) => {
-    return (
-      <TouchableOpacity
-        key={data[1]}
-        style={styles.button}
-        onPressIn={() => {
-          handlePressIn(data[0]);
-        }}
-        onPressOut={() => {
-          handlePressOut(data[0]);
-        }}
-      >
-        <Text style={styles.buttonText}>{data[1]}</Text>
-      </TouchableOpacity>
-    );
-  });
+  const handlePressIn = (button) => {
+    if (socket) {
+      setPressedButtons(prev => new Set(prev).add(button));
+      socket.send(JSON.stringify({ type: "pressIn", value: button }));
+    }
+  };
+
+  const handlePressOut = (button) => {
+    if (socket) {
+      setPressedButtons(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(button);
+        return newSet;
+      });
+      socket.send(JSON.stringify({ type: "pressOut", value: button }));
+    }
+  };
+
+  const Button = ({ label, value, style }) => (
+    <TouchableOpacity
+      style={[styles.button, style, pressedButtons.has(value) && styles.pressedButton]}
+      onPressIn={() => handlePressIn(value)}
+      onPressOut={() => handlePressOut(value)}
+    >
+      <Text style={styles.buttonText}>{label}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-      <View style={styles.twoButtons}>{[Buttons[0], Buttons[1]]}</View>
-      <View style={styles.twoButtons}>{[Buttons[2], Buttons[3]]}</View>
-      <View style={[styles.twoButtons, { marginTop: 20 }]}>
-        {Buttons[4]}
-        <View>
-          <TouchableOpacity
-            style={styles.button}
-            onPressIn={() => {
-              handlePressIn("space");
-            }}
-            onPressOut={() => {
-              handlePressOut("space");
-            }}
-          >
-            <Text style={[styles.buttonText, styles.space]}>Tilt:{0}</Text>
-          </TouchableOpacity>
+      <View style={styles.topButtons}>
+        <Button label="L1" value="l1" style={styles.shoulderButton} />
+        <Button label="R1" value="r1" style={styles.shoulderButton} />
+      </View>
+      <View style={styles.mainControls}>
+        <View style={styles.dpad}>
+          <Button label="↑" value="up" style={styles.dpadVertical} />
+          <View style={styles.dpadMiddle}>
+            <Button label="←" value="left" style={styles.dpadHorizontal} />
+            <View style={styles.dpadCenter} />
+            <Button label="→" value="right" style={styles.dpadHorizontal} />
+          </View>
+          <Button label="↓" value="down" style={styles.dpadVertical} />
         </View>
-        {Buttons[5]}
+        <View style={styles.actionButtons}>
+          <Button label="Y" value="y" style={styles.dpadVertical} />
+          <View style={styles.dpadMiddle}>
+            <Button label="X" value="x" style={styles.dpadHorizontal} />
+            <View style={styles.dpadCenter} />
+            <Button label="B" value="b" style={styles.dpadHorizontal} />
+          </View>
+          <Button label="A" value="a" style={styles.dpadVertical} />
+        </View>
       </View>
     </View>
   );
@@ -74,28 +73,84 @@ const GameController = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
+    padding: 20,
+    backgroundColor: '#f0f0f0',
   },
-  button: {
-    paddingHorizontal: 40,
-    paddingVertical: 20,
-    margin: 8,
-    backgroundColor: "#ccc",
-    borderRadius: 10,
-  },
-  twoButtons: {
-    width: "90%",
+  topButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
+    width: "97%",
+    marginBottom: 40,
   },
-  space: {
-    paddingHorizontal: 90,
+  shoulderButton: {
+    width: 120,
+    height: 50,
   },
-
+  mainControls: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  dpad: {
+    width: 150,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dpadMiddle: {
+    flexDirection: "row",
+    alignItems: 'center',
+  },
+  dpadCenter: {
+    width: 50,
+    height: 50,
+    backgroundColor: '#ccc',
+  },
+  dpadVertical: {
+    width: 50,
+    height: 50,
+  },
+  dpadHorizontal: {
+    width: 50,
+    height: 50,
+  },
+  actionButtons: {
+    width: 150,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionTop: {
+    marginBottom: 20,
+  },
+  actionMiddle: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: '100%',
+    marginBottom: 10,
+  },
+  actionSide: {
+    width: 50,
+    height: 50,
+  },
+  actionBottom: {
+    marginTop: 10,
+  },
+  button: {
+    backgroundColor: "#ccc",
+    borderRadius: 10,
+    padding: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 5,
+  },
+  pressedButton: {
+    backgroundColor: "#999",
+  },
   buttonText: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "bold",
   },
 });
