@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
-import Mouse from "./components/mouse";
 import GameController from "./components/gameController";
 import TiltDetection from "./utils/tiltDetection";
 
