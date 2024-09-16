@@ -1,9 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, View, TextInput, Text, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform } from "react-native";
+import * as ScreenOrientation from 'expo-screen-orientation';
+
 
 const EnterAddress = ({ navigation }) => {
   const [ip, setIp] = useState("");
   const [port, setPort] = useState("");
+
+  useEffect(() => {
+    // Lock the orientation to portrait mode
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+
+    // Unlock the orientation when the component unmounts
+    return () => {
+      ScreenOrientation.unlockAsync();
+    };
+  }, []);
 
   const HandleButtonPress = () => {
     let address = `ws://${ip}:${port}`;

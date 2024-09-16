@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Socket from "../utils/socket";
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 const GameController = ({ route }) => {
   const address = route.params;
   const [socket, setSocket] = useState(null);
   const [pressedButtons, setPressedButtons] = useState(new Set());
+
+  useEffect(() => {
+    // Lock the orientation to portrait mode
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+
+    // Unlock the orientation when the component unmounts
+    return () => {
+      ScreenOrientation.unlockAsync();
+    };
+  }, []);
 
   useEffect(() => {
     setSocket(Socket(address));

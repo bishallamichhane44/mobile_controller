@@ -3,7 +3,7 @@
     "name": "my-first-app",
     "slug": "my-first-app",
     "version": "1.0.0",
-    "orientation": "landscape",
+    "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {

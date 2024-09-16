@@ -1,6 +1,1 @@
-asdfasasdf
-asdfasasdfa
-sdf
-ddddddddasdfasasdfasdf
-a
-sdf
+expo-screen-orientaion works
