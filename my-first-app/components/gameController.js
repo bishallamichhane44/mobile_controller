@@ -13,6 +13,7 @@ const GameController = ({ route }) => {
   }, []);
 
   const handlePressIn = (button) => {
+    console.log("press in", button);
     if (socket) {
       setPressedButtons(prev => new Set(prev).add(button));
       socket.send(JSON.stringify({ type: "pressIn", value: button }));
@@ -20,6 +21,7 @@ const GameController = ({ route }) => {
   };
 
   const handlePressOut = (button) => {
+    console.log("press out", button);
     if (socket) {
       setPressedButtons(prev => {
         const newSet = new Set(prev);
@@ -146,9 +148,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     margin: 5,
   },
-  pressedButton: {
-    backgroundColor: "#999",
-  },
+
   buttonText: {
     fontSize: 18,
     fontWeight: "bold",
