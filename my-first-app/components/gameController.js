@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
   shoulderButton: {
     width: 120,
     height: 50,
+    marginTop: 30,
   },
   mainControls: {
     flexDirection: "row",

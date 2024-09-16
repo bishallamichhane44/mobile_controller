@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
+
 import GameController from "./components/gameController";
 import TiltDetection from "./utils/tiltDetection";
 
@@ -27,7 +28,7 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="EnterAddress">
         <Stack.Screen name="EnterAddress" component={EnterAddress} />
-        <Stack.Screen name="GameController" component={GameController} />
+        <Stack.Screen name="GameController" component={GameController} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
