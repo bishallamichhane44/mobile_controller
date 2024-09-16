@@ -13,21 +13,15 @@ const GameController = ({ route }) => {
   }, []);
 
   const handlePressIn = (button) => {
-    console.log("press in", button);
-    if (socket) {
-      setPressedButtons(prev => new Set(prev).add(button));
+    console.log("handlePressIn", button);
+    if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: "pressIn", value: button }));
     }
   };
 
   const handlePressOut = (button) => {
-    console.log("press out", button);
-    if (socket) {
-      setPressedButtons(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(button);
-        return newSet;
-      });
+    console.log("handlePressOut", button);
+    if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: "pressOut", value: button }));
     }
   };
