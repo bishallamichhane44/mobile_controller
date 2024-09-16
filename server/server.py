@@ -61,6 +61,7 @@ async def handle_button():
                 print(data['value'])    
                 pyautogui.keyDown(data['value'])
             elif data['type'] == "pressOut":
+                print("pressout")
                 pyautogui.keyUp(data['value'])
         await asyncio.sleep(0.001)
 
