@@ -21,19 +21,6 @@ const GameController = ({ route }) => {
   useEffect(() => {
     try {
       const newSocket = Socket(address); // Use the Socket function from socket.js
-
-      newSocket.onopen = () => {
-        alert('Socket connected successfully!');
-      };
-
-      newSocket.onerror = (error) => {
-        alert('Socket connection failed: ' + error.message);
-      };
-
-      newSocket.onclose = () => {
-        alert('Socket connection closed.');
-      };
-
       setSocket(newSocket);
     } catch (error) {
       alert('An error occurred: ' + error.message);
@@ -44,7 +31,7 @@ const GameController = ({ route }) => {
         socket.close();
       }
     };
-  }, [address]);
+  }, []);
 
   const handlePressIn = (button) => {
     console.log("handlePressIn", button);

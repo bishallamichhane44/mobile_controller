@@ -5,14 +5,17 @@ const Socket = (address) => {
   console.log(socket);
   socket.onopen = () => {
     console.log("Connected to the WebSocket server");
+    alert('Socket connected successfully!');
     tilt = TiltDetection(socket);
   };
   socket.onclose = () => {
     console.log("Disconnected from the WebSocket server");
+    alert('Socket connection closed: ' + error.message);
     // tilt();
   };
   socket.onerror = (error) => {
     console.error(`WebSocket error: ${error}`);
+    alert('Socket connection Failed.');
   };
   return socket;
 };
