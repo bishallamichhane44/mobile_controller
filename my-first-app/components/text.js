@@ -11,7 +11,6 @@ import {
 const GameController = ({ route }) => {
   const address = route.params;
   const [socket, setSocket] = useState(null);
-  const [pressedButtons, setPressedButtons] = useState(new Set());
 
   useEffect(() => {
     // Lock the orientation to portrait mode

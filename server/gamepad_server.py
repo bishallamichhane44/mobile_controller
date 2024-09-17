@@ -85,7 +85,7 @@ async def handle_button():
                     print(f"{btn_value} => Y-pressed")
             elif data['type'] == "pressOut":
                 btn_value = data['value'] 
-                if btn_value == 'up':
+                if btn_value == 'up--released':
                     gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
                     print(f"{btn_value} => up-released")
                 elif btn_value == 'down':
