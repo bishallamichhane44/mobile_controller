@@ -11,7 +11,6 @@ import {
 const GameController = ({ route }) => {
   const address = route.params;
   const [socket, setSocket] = useState(null);
-  const [pressedButtons, setPressedButtons] = useState(new Set());
 
   useEffect(() => {
     // Lock the orientation to portrait mode
@@ -24,17 +23,8 @@ const GameController = ({ route }) => {
   }, []);
 
   useEffect(() => {
-    try {
-      setSocket(Socket(address));
-    }catch (error) {
-      console.error('Socket connection failed:', error);
-      alert('Socket connection failed!');
-    }
-    return () => {
-      if (socket) {
-        socket.close();
-      }
-    };
+    setSocket(Socket(address));
+    return () => socket && socket.close();
   }, []);
 
   const handlePressIn = (button) => {
