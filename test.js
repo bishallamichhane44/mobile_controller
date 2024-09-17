@@ -31,7 +31,7 @@ useEffect(() => {
       const newSocket = Socket(address); // Use the Socket function from socket.js
 
       newSocket.onopen = () => {
-       
+        alert('Socket connected successfully!');
       };
 
       newSocket.onerror = (error) => {

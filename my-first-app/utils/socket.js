@@ -10,12 +10,12 @@ const Socket = (address) => {
   };
   socket.onclose = () => {
     console.log("Disconnected from the WebSocket server");
-    alert('Socket connection closed: ' + error.message);
+    alert('Socket connection closed');
     // tilt();
   };
   socket.onerror = (error) => {
     console.error(`WebSocket error: ${error}`);
-    alert('Socket connection Failed.');
+    alert('Socket connection Failed.' + error.message);
   };
   return socket;
 };

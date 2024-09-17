@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import Socket from "../utils/socket";
 import * as ScreenOrientation from 'expo-screen-orientation';
-import TiltDetection from '../utils/tiltDetection';
+import { GestureHandlerRootView, TapGestureHandler, State } from 'react-native-gesture-handler';
 
 const GameController = ({ route }) => {
-  let tilt = null;
   const address = route.params;
   const [socket, setSocket] = useState(null);
   const [pressedButtons, setPressedButtons] = useState(new Set());
 
+  
   useEffect(() => {
     // Lock the orientation to portrait mode
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -21,17 +21,8 @@ const GameController = ({ route }) => {
   }, []);
 
   useEffect(() => {
-    try {
-      setSocket(Socket(address));
-    }catch (error) {
-      console.error('Socket connection failed:', error);
-      alert('Socket connection failed!');
-    }
-    return () => {
-      if (socket) {
-        socket.close();
-      }
-    };
+    setSocket(Socket(address));
+    return () => socket && socket.close();
   }, []);
 
   const handlePressIn = (button) => {
@@ -41,7 +32,15 @@ const GameController = ({ route }) => {
     }
   };
 
-  const handlePressOut = (button) => {
+  const handleStateChange = (event, button) => {
+    if (event.nativeEvent.state === State.BEGAN) {
+      handlePressIn(button);
+    } else if (event.nativeEvent.state === State.END) {
+      handlePressOut(button);
+    }
+  };
+
+    const handlePressOut = (button) => {
     console.log("handlePressOut", button);
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: "pressOut", value: button }));
@@ -49,17 +48,22 @@ const GameController = ({ route }) => {
   };
 
   const Button = ({ label, value, style }) => (
-    <TouchableOpacity
+    
+    <TapGestureHandler
+        onHandlerStateChange={(event) => handleStateChange(event, value)}
+      >
+    <View
       style={[styles.button, style, pressedButtons.has(value) && styles.pressedButton]}
-      onPressIn={() => handlePressIn(value)}
-      onPressOut={() => handlePressOut(value)}
+     
     >
       <Text style={styles.buttonText}>{label}</Text>
-    </TouchableOpacity>
+    </View>
+    </TapGestureHandler>
+    
   );
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <View style={styles.topButtons}>
         <Button label="L1" value="l1" style={styles.shoulderButton} />
         <Button label="R1" value="r1" style={styles.shoulderButton} />
@@ -84,7 +88,7 @@ const GameController = ({ route }) => {
           <Button label="A" value="a" style={styles.dpadVertical} />
         </View>
       </View>
-    </View>
+    </GestureHandlerRootView>
   );
 };
 
