@@ -92,6 +92,13 @@ const GameController = ({ route }) => {
           </View>
           <Button label="↓" value="down" style={styles.dpadVertical} />
         </View>
+        <View style={styles.mButtons}>
+          <View style={styles.mMiddle}>
+            <Button label="K" value="back" style={styles.mHorizontal} />
+            <View style={styles.mCenter} />
+            <Button label="S" value="start" style={styles.mHorizontal} />
+          </View>
+        </View>
         <View style={styles.actionButtons}>
           <Button label="Y" value="y" style={styles.dpadVertical} />
           <View style={styles.dpadMiddle}>
@@ -117,22 +124,22 @@ const styles = StyleSheet.create({
   topButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "97%",
+    width: "90%",
     marginBottom: 40,
+    marginTop: 30,
   },
   shoulderButton: {
     width: 120,
-    height: 50,
-    marginTop: 30,
+    height: 60,
   },
   mainControls: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "100%",
+    width: "96%",
   },
   dpad: {
-    width: 150,
-    height: 150,
+    width: 180,
+    height: 180,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -140,22 +147,37 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  mMiddle: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   dpadCenter: {
     width: 50,
     height: 50,
+
+    backgroundColor: "#ccc",
+  },
+  mCenter: {
+    width: 10,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: "#ccc",
   },
   dpadVertical: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
   },
   dpadHorizontal: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
+  },
+  mHorizontal: {
+    width: 60,
+    height: 60,
   },
   actionButtons: {
-    width: 150,
-    height: 150,
+    width: 180,
+    height: 180,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -169,19 +191,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   actionSide: {
-    width: 50,
+    width: 70,
     height: 50,
   },
   actionBottom: {
     marginTop: 10,
   },
   button: {
-    backgroundColor: "#ccc",
+    backgroundColor: "#335c67",
     borderRadius: 10,
-    padding: 15,
+    padding: 20,
     alignItems: "center",
     justifyContent: "center",
-    margin: 5,
+    margin: 9,
+  },
+  mButtons: {
+    width: 180,
+    height: 180,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   buttonText: {

@@ -53,6 +53,12 @@ async def handle_button():
                 if btn_value == 'up':
                     gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
                     print(f"{btn_value} => up-pressed")
+                elif btn_value == 'start':
+                    gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_START)
+                    print(f"{btn_value} => start-pressed")
+                elif btn_value == 'back':
+                    gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_BACK)
+                    print(f"{btn_value} => back-pressed")
                 elif btn_value == 'down':
                     gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
                     print(f"{btn_value} => down-pressed")
@@ -68,9 +74,6 @@ async def handle_button():
                 elif btn_value == 'b':
                     gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
                     print(f"{btn_value} => B-pressed")
-                elif btn_value == 'space':
-                    gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
-                    print(f"{btn_value} => R1-pressed")
                 elif btn_value == 'r1':
                     gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
                     print(f"{btn_value} => R1-pressed")
@@ -88,6 +91,12 @@ async def handle_button():
                 if btn_value == 'up':
                     gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
                     print(f"{btn_value} => up-released")
+                elif btn_value == 'start':
+                    gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_START)
+                    print(f"{btn_value} => start-released")
+                elif btn_value == 'back':
+                    gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_BACK)
+                    print(f"{btn_value} => back-released")
                 elif btn_value == 'down':
                     gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN)
                     print(f"{btn_value} => down-released")
@@ -99,13 +108,10 @@ async def handle_button():
                     print(f"{btn_value} => right-released")
                 elif btn_value == 'a':
                     gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
-                    print(f"{btn_value} => a-released")
+                    print(f"{btn_value} => A-released")
                 elif btn_value == 'b':
                     gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
-                    print(f"{btn_value} => b-released")
-                elif btn_value == 'space':
-                    gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
-                    print(f"{btn_value} => R1-released")
+                    print(f"{btn_value} => B-released")
                 elif btn_value == 'r1':
                     gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
                     print(f"{btn_value} => R1-released")

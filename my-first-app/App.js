@@ -9,7 +9,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="EnterAddress">
-        <Stack.Screen name="EnterAddress" component={EnterAddress} />
+        <Stack.Screen name="EnterAddress" component={EnterAddress} options={{ title: "Game Link" }} />
         <Stack.Screen
           name="GameController"
           component={GameController}
