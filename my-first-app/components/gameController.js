@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text } from "react-native";
-import Socket from "../utils/socket";
+import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import Socket from "../utils/socket_simple"; // Use simple socket for testing
 import * as ScreenOrientation from "expo-screen-orientation";
 import {
   GestureHandlerRootView,
@@ -9,12 +9,12 @@ import {
 } from "react-native-gesture-handler";
 
 const GameController = ({ route }) => {
-  const address = route.params;
-  const [socket, setSocket] = useState(null);
+  const address = route.params;  const [socket, setSocket] = useState(null);
   const [pressedButtons, setPressedButtons] = useState(new Set());
-
+  const [tiltEnabled, setTiltEnabled] = useState(false); // OFF by default
+  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   useEffect(() => {
-    // Lock the orientation to portrait mode
+    // Lock the orientation to landscape mode
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
 
     // Unlock the orientation when the component unmounts
@@ -22,25 +22,72 @@ const GameController = ({ route }) => {
       ScreenOrientation.unlockAsync();
     };
   }, []);
-
   useEffect(() => {
+    let currentSocket = null;
+    
     try {
-      setSocket(Socket(address));
-    }catch (error) {
+      setConnectionStatus('Connecting...');
+      currentSocket = Socket(address);
+      
+      // Override socket event handlers to update status
+      const originalOnOpen = currentSocket.onopen;
+      const originalOnClose = currentSocket.onclose;
+      const originalOnError = currentSocket.onerror;
+      
+      currentSocket.onopen = (event) => {
+        setConnectionStatus('Connected');
+        if (originalOnOpen) originalOnOpen(event);
+      };
+      
+      currentSocket.onclose = (event) => {
+        setConnectionStatus('Disconnected');
+        if (originalOnClose) originalOnClose(event);
+      };
+      
+      currentSocket.onerror = (event) => {
+        setConnectionStatus('Error');
+        if (originalOnError) originalOnError(event);
+      };
+      
+      setSocket(currentSocket);
+    } catch (error) {
       console.error('Socket connection failed:', error);
+      setConnectionStatus('Failed');
       alert('Socket connection failed!');
     }
+    
     return () => {
-      if (socket) {
-        socket.close();
+      if (currentSocket) {
+        // Use custom cleanup method if available
+        if (currentSocket.cleanup) {
+          currentSocket.cleanup();
+        }
+        
+        // Close the socket
+        try {
+          currentSocket.close();
+        } catch (error) {
+          console.error('Error closing socket:', error);
+        }
       }
+      setConnectionStatus('Disconnected');
     };
-  }, []);
+  }, [address]);
 
+  // Handle tilt enable/disable
+  useEffect(() => {
+    if (socket && socket.setTiltEnabled) {
+      socket.setTiltEnabled(tiltEnabled);
+    }
+  }, [tiltEnabled, socket]);
   const handlePressIn = (button) => {
     console.log("handlePressIn", button);
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: "pressIn", value: button }));
+      try {
+        socket.send(JSON.stringify({ type: "pressIn", value: button }));
+      } catch (error) {
+        console.error('Failed to send pressIn:', error);
+      }
     }
   };
 
@@ -55,7 +102,11 @@ const GameController = ({ route }) => {
   const handlePressOut = (button) => {
     console.log("handlePressOut", button);
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: "pressOut", value: button }));
+      try {
+        socket.send(JSON.stringify({ type: "pressOut", value: button }));
+      } catch (error) {
+        console.error('Failed to send pressOut:', error);
+      }
     }
   };
 
@@ -75,9 +126,19 @@ const GameController = ({ route }) => {
       </View>
     </LongPressGestureHandler>
   );
-
   return (
     <GestureHandlerRootView style={styles.container}>
+      <View style={styles.statusBar}>
+        <Text style={styles.statusText}>Status: {connectionStatus}</Text>
+        <TouchableOpacity 
+          style={[styles.toggleButton, { backgroundColor: tiltEnabled ? '#4CAF50' : '#f44336' }]}
+          onPress={() => setTiltEnabled(!tiltEnabled)}
+        >
+          <Text style={styles.toggleText}>
+            Tilt: {tiltEnabled ? 'ON' : 'OFF'}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.topButtons}>
         <Button label="L1" value="l1" style={styles.shoulderButton} />
         <Button label="R1" value="r1" style={styles.shoulderButton} />
@@ -120,6 +181,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#f0f0f0",
+  },
+  statusBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  toggleButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 5,
+  },
+  toggleText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 12,
   },
   topButtons: {
     flexDirection: "row",
