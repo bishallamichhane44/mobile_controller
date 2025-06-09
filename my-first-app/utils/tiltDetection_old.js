@@ -1,4 +1,4 @@
-import { Accelerometer } from 'expo-sensors';
+import { DeviceMotion } from "expo-sensors";
 
 const TiltDetection = (socket, enabled = false) => {
   let isActive = true;
@@ -6,21 +6,28 @@ const TiltDetection = (socket, enabled = false) => {
   let isEnabled = enabled;
   let lastSentTime = 0;
   let lastSentValue = null;
-    const THROTTLE_INTERVAL = 50; // Send at most every 50ms (20 FPS)
-  const VALUE_THRESHOLD = 0.2; // Send more frequent changes
+  
+  const THROTTLE_INTERVAL = 100; // Send at most every 100ms (10 FPS)
+  const VALUE_THRESHOLD = 0.2; // Only send significant changes
 
-  const onAccelerometerData = ({ y }) => {
+  const onDeviceMotion = (data) => {
     try {
       if (!isActive || !isEnabled || !socket || socket.readyState !== WebSocket.OPEN) {
         return;
       }
 
       // Check if we have valid data
-      if (typeof y !== 'number' || isNaN(y)) {
+      if (!data || !data.accelerationIncludingGravity) {
         return;
       }
 
       const now = Date.now();
+      const { y } = data.accelerationIncludingGravity;
+      
+      // Validate y value
+      if (typeof y !== 'number' || isNaN(y)) {
+        return;
+      }
       
       // Throttle updates
       if (now - lastSentTime < THROTTLE_INTERVAL) {
@@ -34,54 +41,38 @@ const TiltDetection = (socket, enabled = false) => {
         return;
       }
 
-      // Send data directly
+      // Send data directly (no async/queue complexity)
       const tiltData = { type: "tilt", value: roundedValue };
       socket.send(JSON.stringify(tiltData));
       
       lastSentTime = now;
       lastSentValue = roundedValue;
-      console.log(`Tilt sent: ${roundedValue}`);
       
     } catch (error) {
       console.error('Error in tilt detection:', error);
       // Don't crash, just log the error
     }
   };
-
   // Initialize with safe error handling
-  const initializeSensor = async () => {
-    try {
-      // Check if accelerometer is available
-      const available = await Accelerometer.isAvailableAsync();
-      if (!available) {
-        console.error('Accelerometer not available on this device');
-        isActive = false;
-        return false;
-      }
-
-      // Request permissions
-      const { status } = await Accelerometer.requestPermissionsAsync();
-      if (status !== 'granted') {
-        console.error('Accelerometer permission not granted');
-        isActive = false;
-        return false;
-      }
-        // Set update interval
-      Accelerometer.setUpdateInterval(50);
-      
-      // Subscribe to accelerometer data
-      subscription = Accelerometer.addListener(onAccelerometerData);
-      console.log("Tilt detection initialized successfully with expo-sensors");
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize tilt detection:', error);
+  try {
+    // Check if DeviceMotion is available
+    if (!DeviceMotion.isAvailableAsync) {
+      console.error('DeviceMotion not available');
       isActive = false;
-      return false;
+      return {
+        cleanup: () => {},
+        setEnabled: () => {}
+      };
     }
-  };
+    
+    DeviceMotion.setUpdateInterval(100);
+    subscription = DeviceMotion.addListener(onDeviceMotion);
+    console.log("Tilt detection initialized successfully");
+  } catch (error) {
+    console.error('Failed to initialize tilt detection:', error);
+    isActive = false;
+  }
 
-  // Initialize immediately
-  initializeSensor();
   // Return control object
   return {
     cleanup: () => {
@@ -104,5 +95,4 @@ const TiltDetection = (socket, enabled = false) => {
     }
   };
 };
-
 export default TiltDetection;

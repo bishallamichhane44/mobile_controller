@@ -1,4 +1,5 @@
 import TiltDetection from "./tiltDetection";
+import TiltDetectionFallback from "./tiltDetectionFallback";
 
 const Socket = (address) => {
   let tiltDetector = null;
@@ -88,26 +89,45 @@ const Socket = (address) => {
   // Add method to check if socket is healthy
   socket.isHealthy = () => {
     return socket.readyState === WebSocket.OPEN;
-  };
-  // Add method to control tilt detection
+  };  // Add method to control tilt detection
   socket.setTiltEnabled = (enabled) => {
-    if (enabled && !tiltDetector && socket.readyState === WebSocket.OPEN) {
-      // Create tilt detector only when enabling
-      try {
-        tiltDetector = TiltDetection(socket, true);
-        console.log("Tilt detection enabled");
-      } catch (error) {
-        console.error('Failed to enable tilt detection:', error);
-      }
-    } else if (!enabled && tiltDetector) {
-      // Disable and cleanup tilt detector
-      try {
+    try {
+      if (enabled && !tiltDetector && socket.readyState === WebSocket.OPEN) {
+        // Try react-native-sensors first
+        console.log("Attempting to enable tilt detection with react-native-sensors...");
+        try {
+          tiltDetector = TiltDetection(socket, true);
+          console.log("Tilt detection enabled successfully with react-native-sensors");
+        } catch (sensorsError) {
+          console.log("react-native-sensors failed, trying fallback method...");
+          try {
+            tiltDetector = TiltDetectionFallback(socket, true);
+            console.log("Tilt detection enabled successfully with fallback method");
+          } catch (fallbackError) {
+            console.error("Both tilt detection methods failed:", sensorsError, fallbackError);
+            throw new Error("All tilt detection methods failed");
+          }
+        }
+      } else if (!enabled && tiltDetector) {
+        // Disable and cleanup tilt detector
+        console.log("Disabling tilt detection...");
         tiltDetector.cleanup();
         tiltDetector = null;
-        console.log("Tilt detection disabled");
-      } catch (error) {
-        console.error('Failed to disable tilt detection:', error);
+        console.log("Tilt detection disabled successfully");
       }
+    } catch (error) {
+      console.error('Error in setTiltEnabled:', error);
+      // Clean up on error
+      if (tiltDetector) {
+        try {
+          tiltDetector.cleanup();
+        } catch (cleanupError) {
+          console.error('Error during cleanup after failure:', cleanupError);
+        }
+        tiltDetector = null;
+      }
+      // Show user-friendly error
+      alert('Tilt detection failed to initialize. Your device may not support motion sensors.');
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
-import Socket from "../utils/socket_simple"; // Use simple socket for testing
+import Socket from "../utils/socket"; // Back to enhanced socket with tilt
 import * as ScreenOrientation from "expo-screen-orientation";
 import {
   GestureHandlerRootView,
