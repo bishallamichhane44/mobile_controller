@@ -6,8 +6,8 @@ const TiltDetection = (socket, enabled = false) => {
   let isEnabled = enabled;
   let lastSentTime = 0;
   let lastSentValue = null;
-    const THROTTLE_INTERVAL = 50; // Send at most every 50ms (20 FPS)
-  const VALUE_THRESHOLD = 0.2; // Send more frequent changes
+  const THROTTLE_INTERVAL = 20; // Send at most every 50ms (20 FPS)
+  const VALUE_THRESHOLD = 0.05; // Send more frequent changes
 
   const onAccelerometerData = ({ y }) => {
     try {
