@@ -8,15 +8,19 @@ import {
   PanGestureHandler,
   State,
 } from "react-native-gesture-handler";
+import hapticFeedback from "../utils/hapticFeedback";
 
 const GameController = ({ route }) => {
   const address = route.params;
   const [socket, setSocket] = useState(null);
   const [pressedButtons, setPressedButtons] = useState(new Set());
   const [tiltEnabled, setTiltEnabled] = useState(false); // OFF by default
+  const [hapticsEnabled, setHapticsEnabled] = useState(true); // ON by default
   const [connectionStatus, setConnectionStatus] = useState("Disconnected");
   const [rightJoystickActive, setRightJoystickActive] = useState(false);
   const [joystickCenter, setJoystickCenter] = useState({ x: 0, y: 0 });
+  const [lastJoystickEdge, setLastJoystickEdge] = useState({ x: false, y: false });
+
   useEffect(() => {
     // Lock the orientation to landscape mode
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -77,15 +81,26 @@ const GameController = ({ route }) => {
       setConnectionStatus("Disconnected");
     };
   }, [address]);
-
   // Handle tilt enable/disable
   useEffect(() => {
     if (socket && socket.setTiltEnabled) {
       socket.setTiltEnabled(tiltEnabled);
     }
   }, [tiltEnabled, socket]);
-  const handlePressIn = (button) => {
+
+  // Handle haptics enable/disable
+  useEffect(() => {
+    if (socket && socket.setHapticsEnabled) {
+      socket.setHapticsEnabled(hapticsEnabled);
+    }
+    hapticFeedback.setEnabled(hapticsEnabled);
+  }, [hapticsEnabled, socket]);  const handlePressIn = (button) => {
     console.log("handlePressIn", button);
+    
+    // Haptic feedback for button press
+    const buttonType = getButtonType(button);
+    hapticFeedback.buttonPress(buttonType);
+    
     if (socket && socket.readyState === WebSocket.OPEN) {
       try {
         socket.send(JSON.stringify({ type: "pressIn", value: button }));
@@ -95,13 +110,21 @@ const GameController = ({ route }) => {
     }
   };
 
+  const getButtonType = (button) => {
+    if (['a', 'b'].includes(button)) return 'primary';
+    if (['x', 'y'].includes(button)) return 'secondary';
+    if (['up', 'down', 'left', 'right'].includes(button)) return 'dpad';
+    if (['l1', 'r1'].includes(button)) return 'shoulder';
+    return 'default';
+  };
+
   const handleStateChange = (event, button) => {
     if (event.nativeEvent.state === State.BEGAN) {
       handlePressIn(button);
     } else if (event.nativeEvent.state === State.END) {
       handlePressOut(button);
     }
-  };
+  };  
   const handlePressOut = (button) => {
     console.log("handlePressOut", button);
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -111,7 +134,7 @@ const GameController = ({ route }) => {
         console.error("Failed to send pressOut:", error);
       }
     }
-  }; // Handle right joystick movement with continuous updates
+  };// Handle right joystick movement with continuous updates
   const sendJoystickData = useCallback(
     (x, y) => {
       if (socket && socket.readyState === WebSocket.OPEN) {
@@ -177,15 +200,26 @@ const GameController = ({ route }) => {
 
     // Clamp values to ensure they're within -1 to 1
     x = Math.max(-1, Math.min(1, x));
-    y = Math.max(-1, Math.min(1, y));
-
-    // Apply deadzone to prevent drift near center
+    y = Math.max(-1, Math.min(1, y));    // Apply deadzone to prevent drift near center
     const deadzone = 0.1;
     const distanceNormalized = distance / maxRange;
     if (distanceNormalized < deadzone) {
       x = 0;
       y = 0;
     }
+
+    // Check for edge haptic feedback
+    const isAtEdge = distanceNormalized > 0.9;
+    const currentEdgeX = Math.abs(x) > 0.9;
+    const currentEdgeY = Math.abs(y) > 0.9;
+    
+    if (isAtEdge && (!lastJoystickEdge.x || !lastJoystickEdge.y)) {
+      if ((currentEdgeX && !lastJoystickEdge.x) || (currentEdgeY && !lastJoystickEdge.y)) {
+        hapticFeedback.joystickEdge();
+      }
+    }
+    
+    setLastJoystickEdge({ x: currentEdgeX, y: currentEdgeY });
 
     console.log(`Calculated joystick values: x=${x.toFixed(3)}, y=${y.toFixed(3)}, distance=${distance.toFixed(1)}`);
 
@@ -210,8 +244,8 @@ const GameController = ({ route }) => {
     </LongPressGestureHandler>
   );
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <View style={styles.statusBar}>
+    <GestureHandlerRootView style={styles.container}>      
+    <View style={styles.statusBar}>
         <Text style={styles.statusText}>Status: {connectionStatus}</Text>
         <TouchableOpacity
           style={[
@@ -222,6 +256,17 @@ const GameController = ({ route }) => {
         >
           <Text style={styles.toggleText}>
             Tilt: {tiltEnabled ? "ON" : "OFF"}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.toggleButton,
+            { backgroundColor: hapticsEnabled ? "#4CAF50" : "#f44336" },
+          ]}
+          onPress={() => setHapticsEnabled(!hapticsEnabled)}
+        >
+          <Text style={styles.toggleText}>
+            Haptic: {hapticsEnabled ? "ON" : "OFF"}
           </Text>
         </TouchableOpacity>
         {rightJoystickActive && (

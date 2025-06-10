@@ -1,5 +1,6 @@
 import TiltDetection from "./tiltDetection";
 import TiltDetectionFallback from "./tiltDetectionFallback";
+import hapticFeedback from "./hapticFeedback";
 
 const Socket = (address) => {
   let tiltDetector = null;
@@ -18,22 +19,42 @@ const Socket = (address) => {
       socket.close();
     }
   }, 10000); // 10 second timeout
-    socket.onopen = () => {
+
+  // Handle incoming messages, including vibration
+  socket.onmessage = (event) => {
+    try {
+      const message = JSON.parse(event.data);
+      
+      if (message.type === 'vibration') {
+        // Handle vibration message from server
+        hapticFeedback.handleServerVibration(message.left || 0, message.right || 0);
+      } else {
+        // Handle other message types if needed
+        console.log('Received message:', message);
+      }
+    } catch (error) {
+      console.error('Error parsing incoming message:', error);
+    }
+  };    socket.onopen = () => {
     isConnecting = false;
     connectionAttempts = 0;
     clearTimeout(connectionTimeout);
     console.log("Connected to the WebSocket server");
     alert('Socket connected successfully!');
+    
+    // Connection success haptic feedback
+    hapticFeedback.connectionFeedback(true);
+    
     // NO tilt detection initialization - completely removed
   };
-
   socket.onclose = (event) => {
     isConnecting = false;
     clearTimeout(connectionTimeout);
     console.log("Disconnected from the WebSocket server", event.code, event.reason);
     
-    // Don't show alert for normal closure
+    // Connection lost haptic feedback
     if (event.code !== 1000) {
+      hapticFeedback.connectionFeedback(false);
       alert(`Socket connection closed: ${event.reason || 'Connection lost'}`);
     }
     
@@ -89,7 +110,12 @@ const Socket = (address) => {
   // Add method to check if socket is healthy
   socket.isHealthy = () => {
     return socket.readyState === WebSocket.OPEN;
-  };  // Add method to control tilt detection
+  };  // Add method to control haptic feedback
+  socket.setHapticsEnabled = (enabled) => {
+    hapticFeedback.setEnabled(enabled);
+  };
+
+  // Add method to control tilt detection
   socket.setTiltEnabled = (enabled) => {
     try {
       if (enabled && !tiltDetector && socket.readyState === WebSocket.OPEN) {

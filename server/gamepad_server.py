@@ -2,33 +2,103 @@ import asyncio
 import websockets
 import json
 import vgamepad as vg     
-import pyautogui      
+import pyautogui
+import threading
+import time
+from typing import Set
+from vibration_monitor import VibrationMonitor
 
 latest_data = None
 button_data = None
 right_joystick_data = None
+connected_clients: Set[websockets.WebSocketServerProtocol] = set()
 
 gamepad = vg.VX360Gamepad()
 pyautogui.FAILSAFE = False
 
+# Enhanced vibration monitoring
+vibration_monitor = VibrationMonitor()
+last_vibration_state = {"left": 0, "right": 0}
+
+async def send_vibration_to_clients(left_motor: float, right_motor: float):
+    """Send vibration data to all connected clients"""
+    if not connected_clients:
+        return
+        
+    vibration_message = json.dumps({
+        "type": "vibration",
+        "left": left_motor,
+        "right": right_motor
+    })
+    
+    # Send to all connected clients
+    disconnected_clients = set()
+    for client in connected_clients.copy():
+        try:
+            await client.send(vibration_message)
+            print(f"Sent vibration: L={left_motor:.2f}, R={right_motor:.2f}")
+        except websockets.exceptions.ConnectionClosed:
+            disconnected_clients.add(client)
+        except Exception as e:
+            print(f"Error sending vibration to client: {e}")
+            disconnected_clients.add(client)
+    
+    # Remove disconnected clients
+    connected_clients.difference_update(disconnected_clients)
+
+async def monitor_vibration():
+    """Enhanced vibration monitoring using VibrationMonitor class"""
+    vibration_monitor.set_vibration_callback(send_vibration_to_clients)
+    await vibration_monitor.start_monitoring()
+
+async def test_vibration():
+    """Test vibration patterns"""
+    while True:
+        await asyncio.sleep(20)  # Every 20 seconds
+        if connected_clients:
+            print("Testing vibration patterns...")
+            await vibration_monitor.test_vibration_sequence()
+
 async def handler(websocket, path):
     global latest_data, button_data, right_joystick_data
-    print("connected: ", websocket)
+    connected_clients.add(websocket)
+    print(f"Client connected: {websocket.remote_address}")
+    
     try:
         async for message in websocket:
             message = json.loads(message)
             if message['type'] == "pressIn" or message['type'] == "pressOut":
                 button_data = message
+                
+                # Simulate vibration on certain button presses for demo
+                if message['type'] == "pressIn" and message['value'] in ['a', 'b']:
+                    asyncio.create_task(simulate_button_vibration(message['value']))
+                    
             elif message['type'] == "rightJoystick":
                 right_joystick_data = message
             else:
                 latest_data = message
+                
     except websockets.exceptions.ConnectionClosed:
-        print(f"Client disconnected: {websocket}")
+        print(f"Client disconnected: {websocket.remote_address}")
     except Exception as e:
         print(f"Unexpected error: {e}")
     finally:
-        print("removed client: ", websocket)
+        connected_clients.discard(websocket)
+        print(f"Removed client: {websocket.remote_address}")
+
+async def simulate_button_vibration(button):
+    """Simulate vibration feedback for button presses"""
+    if button == 'a':
+        # Light vibration for A button
+        await send_vibration_to_clients(0.3, 0.3)
+        await asyncio.sleep(0.1)
+        await send_vibration_to_clients(0.0, 0.0)
+    elif button == 'b':
+        # Stronger vibration for B button
+        await send_vibration_to_clients(0.7, 0.7)
+        await asyncio.sleep(0.15)
+        await send_vibration_to_clients(0.0, 0.0)
 
 async def handle_latest_data():
     global latest_data, button_data
@@ -156,14 +226,34 @@ async def handle_right_joystick():
         await asyncio.sleep(0.001)
 
 async def main():
+    # Setup vibration monitoring
+    print("Initializing haptic feedback system...")
+    
     start_server = await websockets.serve(handler, "0.0.0.0", 8080)
     print("WebSocket server is running on ws://0.0.0.0:8080")
-    await asyncio.gather(
-        start_server.wait_closed(),
-        handle_button(),
-        handle_latest_data(),
-        handle_right_joystick()
-    )
+    print("Haptic feedback enabled - vibration signals will be sent to mobile clients")
+    print("Available features:")
+    print("  - Button press haptic feedback")
+    print("  - Game vibration relay to mobile device")
+    print("  - Joystick edge detection feedback")
+    print("  - Connection status feedback")
+    
+    try:
+        await asyncio.gather(
+            start_server.wait_closed(),
+            handle_button(),
+            handle_latest_data(),
+            handle_right_joystick(),
+            monitor_vibration(),
+            test_vibration()  # Comment this line to disable test vibrations
+        )
+    except KeyboardInterrupt:
+        print("\nShutting down server...")
+    finally:
+        # Cleanup
+        vibration_monitor.stop_monitoring()
+        print("Vibration monitoring stopped")
+        print("Server shutdown complete")
 
 if __name__ == "__main__":
     asyncio.run(main())
