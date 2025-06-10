@@ -181,17 +181,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#f0f0f0",
-  },
-  statusBar: {
+  },  statusBar: {
+    position: "absolute",
+    top: 20,
+    left: "50%",
+    transform: [{ translateX: -85 }],
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     alignItems: "center",
-    width: "100%",
+    width: "30%",
     paddingHorizontal: 10,
     paddingVertical: 5,
     backgroundColor: "#e0e0e0",
     borderRadius: 5,
-    marginBottom: 10,
+    zIndex: 1000,
   },
   statusText: {
     fontSize: 14,
@@ -207,13 +210,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: 12,
-  },
-  topButtons: {
+  },  topButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "90%",
     marginBottom: 40,
-    marginTop: 30,
   },
   shoulderButton: {
     width: 120,
