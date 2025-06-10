@@ -11,22 +11,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "usesCleartextTraffic": true,
-            "networkSecurityConfig": "network_security_config.xml",
-            "compileSdkVersion": 34,
-            "targetSdkVersion": 34,
-            "buildToolsVersion": "34.0.0",
-            "allowBackup": false,
-            "debuggable": true
-          }
-        }
-      ]
-    ],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -41,6 +25,8 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.bishal4433.myfirstapp",
+      "usesCleartextTraffic": true,
+      "networkSecurityConfig": "./android/network_security_config.xml",
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",
