@@ -6,18 +6,21 @@ import pyautogui
 
 latest_data = None
 button_data = None
+right_joystick_data = None
 
 gamepad = vg.VX360Gamepad()
 pyautogui.FAILSAFE = False
 
 async def handler(websocket, path):
-    global latest_data, button_data
+    global latest_data, button_data, right_joystick_data
     print("connected: ", websocket)
     try:
         async for message in websocket:
             message = json.loads(message)
             if message['type'] == "pressIn" or message['type'] == "pressOut":
                 button_data = message
+            elif message['type'] == "rightJoystick":
+                right_joystick_data = message
             else:
                 latest_data = message
     except websockets.exceptions.ConnectionClosed:
@@ -131,8 +134,25 @@ async def handle_button():
                 elif btn_value == 'start':
                     gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_START)
                     print(f"{btn_value} => Start-released")
+            gamepad.update()                
+        await asyncio.sleep(0.001)
+
+async def handle_right_joystick():
+    global right_joystick_data
+    while True:
+        if right_joystick_data:
+            data = right_joystick_data
+            right_joystick_data = None
+            
+            # Clamp values to ensure they're within valid range
+            x_value = max(-1.0, min(1.0, float(data['x'])))
+            y_value = max(-1.0, min(1.0, float(data['y'])))
+            
+            print(f"RIGHT JOYSTICK: x={x_value:+.3f}, y={y_value:+.3f} | {'Moving' if (x_value != 0 or y_value != 0) else 'Center'}")
+            
+            gamepad.right_joystick_float(x_value_float=x_value, y_value_float=y_value)
             gamepad.update()
-                
+            
         await asyncio.sleep(0.001)
 
 async def main():
@@ -141,7 +161,8 @@ async def main():
     await asyncio.gather(
         start_server.wait_closed(),
         handle_button(),
-        handle_latest_data()
+        handle_latest_data(),
+        handle_right_joystick()
     )
 
 if __name__ == "__main__":
