@@ -109,7 +109,6 @@ const GameController = ({ route }) => {
     }
   };
   const handleStateChange = (event, button) => {
-    console.log(event.nativeEvent.state);
     if (event.nativeEvent.state === State.BEGAN) {
       handlePressIn(button);
     } else if (
