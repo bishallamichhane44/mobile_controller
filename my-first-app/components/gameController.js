@@ -11,15 +11,13 @@ import {
 import hapticFeedback from "../utils/hapticFeedback";
 
 const GameController = ({ route }) => {
-  const address = route.params;
-  const [socket, setSocket] = useState(null);
+  const address = route.params;  const [socket, setSocket] = useState(null);
   const [pressedButtons, setPressedButtons] = useState(new Set());
   const [tiltEnabled, setTiltEnabled] = useState(false); // OFF by default
   const [hapticsEnabled, setHapticsEnabled] = useState(true); // ON by default
   const [connectionStatus, setConnectionStatus] = useState("Disconnected");
   const [rightJoystickActive, setRightJoystickActive] = useState(false);
   const [joystickCenter, setJoystickCenter] = useState({ x: 0, y: 0 });
-  const [lastJoystickEdge, setLastJoystickEdge] = useState({ x: false, y: false });
 
   useEffect(() => {
     // Lock the orientation to landscape mode
@@ -97,9 +95,8 @@ const GameController = ({ route }) => {
   }, [hapticsEnabled, socket]);  const handlePressIn = (button) => {
     console.log("handlePressIn", button);
     
-    // Haptic feedback for button press
-    const buttonType = getButtonType(button);
-    hapticFeedback.buttonPress(buttonType);
+    // Mild haptic feedback for button press
+    hapticFeedback.buttonPress();
     
     if (socket && socket.readyState === WebSocket.OPEN) {
       try {
@@ -109,22 +106,13 @@ const GameController = ({ route }) => {
       }
     }
   };
-
-  const getButtonType = (button) => {
-    if (['a', 'b'].includes(button)) return 'primary';
-    if (['x', 'y'].includes(button)) return 'secondary';
-    if (['up', 'down', 'left', 'right'].includes(button)) return 'dpad';
-    if (['l1', 'r1'].includes(button)) return 'shoulder';
-    return 'default';
-  };
-
   const handleStateChange = (event, button) => {
     if (event.nativeEvent.state === State.BEGAN) {
       handlePressIn(button);
     } else if (event.nativeEvent.state === State.END) {
       handlePressOut(button);
     }
-  };  
+  };
   const handlePressOut = (button) => {
     console.log("handlePressOut", button);
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -207,19 +195,6 @@ const GameController = ({ route }) => {
       x = 0;
       y = 0;
     }
-
-    // Check for edge haptic feedback
-    const isAtEdge = distanceNormalized > 0.9;
-    const currentEdgeX = Math.abs(x) > 0.9;
-    const currentEdgeY = Math.abs(y) > 0.9;
-    
-    if (isAtEdge && (!lastJoystickEdge.x || !lastJoystickEdge.y)) {
-      if ((currentEdgeX && !lastJoystickEdge.x) || (currentEdgeY && !lastJoystickEdge.y)) {
-        hapticFeedback.joystickEdge();
-      }
-    }
-    
-    setLastJoystickEdge({ x: currentEdgeX, y: currentEdgeY });
 
     console.log(`Calculated joystick values: x=${x.toFixed(3)}, y=${y.toFixed(3)}, distance=${distance.toFixed(1)}`);
 

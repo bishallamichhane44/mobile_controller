@@ -42,19 +42,14 @@ const Socket = (address) => {
     console.log("Connected to the WebSocket server");
     alert('Socket connected successfully!');
     
-    // Connection success haptic feedback
-    hapticFeedback.connectionFeedback(true);
-    
     // NO tilt detection initialization - completely removed
-  };
-  socket.onclose = (event) => {
+  };  socket.onclose = (event) => {
     isConnecting = false;
     clearTimeout(connectionTimeout);
     console.log("Disconnected from the WebSocket server", event.code, event.reason);
     
-    // Connection lost haptic feedback
+    // Don't show alert for normal closure
     if (event.code !== 1000) {
-      hapticFeedback.connectionFeedback(false);
       alert(`Socket connection closed: ${event.reason || 'Connection lost'}`);
     }
     
