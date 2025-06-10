@@ -84,6 +84,12 @@ async def handle_button():
                 elif btn_value == 'y':
                     gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_Y)
                     print(f"{btn_value} => Y-pressed")
+                elif btn_value == 'back':
+                    gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_BACK)
+                    print(f"{btn_value} => Back-pressed")
+                elif btn_value == 'start':
+                    gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_START)
+                    print(f"{btn_value} => Start-pressed")
             elif data['type'] == "pressOut":
                 btn_value = data['value'] 
                 if btn_value == 'up':
@@ -119,6 +125,12 @@ async def handle_button():
                 elif btn_value == 'y':
                     gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_Y)
                     print(f"{btn_value} => Y-released")
+                elif btn_value == 'back':
+                    gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_BACK)
+                    print(f"{btn_value} => Back-released")
+                elif btn_value == 'start':
+                    gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_START)
+                    print(f"{btn_value} => Start-released")
             gamepad.update()
                 
         await asyncio.sleep(0.001)
