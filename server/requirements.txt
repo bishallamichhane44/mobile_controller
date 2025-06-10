@@ -1,0 +1,4 @@
+websockets==12.0
+vgamepad==0.0.8
+PyAutoGUI==0.9.54
+asyncio==3.4.3
