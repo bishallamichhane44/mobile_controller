@@ -11,7 +11,8 @@ import {
 import hapticFeedback from "../utils/hapticFeedback";
 
 const GameController = ({ route }) => {
-  const address = route.params;  const [socket, setSocket] = useState(null);
+  const address = route.params;
+  const [socket, setSocket] = useState(null);
   const [pressedButtons, setPressedButtons] = useState(new Set());
   const [tiltEnabled, setTiltEnabled] = useState(false); // OFF by default
   const [hapticsEnabled, setHapticsEnabled] = useState(true); // ON by default
@@ -92,12 +93,13 @@ const GameController = ({ route }) => {
       socket.setHapticsEnabled(hapticsEnabled);
     }
     hapticFeedback.setEnabled(hapticsEnabled);
-  }, [hapticsEnabled, socket]);  const handlePressIn = (button) => {
+  }, [hapticsEnabled, socket]);
+  const handlePressIn = (button) => {
     console.log("handlePressIn", button);
-    
+
     // Mild haptic feedback for button press
     hapticFeedback.buttonPress();
-    
+
     if (socket && socket.readyState === WebSocket.OPEN) {
       try {
         socket.send(JSON.stringify({ type: "pressIn", value: button }));
@@ -107,9 +109,13 @@ const GameController = ({ route }) => {
     }
   };
   const handleStateChange = (event, button) => {
+    console.log(event.nativeEvent.state);
     if (event.nativeEvent.state === State.BEGAN) {
       handlePressIn(button);
-    } else if (event.nativeEvent.state === State.END) {
+    } else if (
+      event.nativeEvent.state === State.END ||
+      event.nativeEvent.state === State.CANCELLED
+    ) {
       handlePressOut(button);
     }
   };
@@ -122,7 +128,7 @@ const GameController = ({ route }) => {
         console.error("Failed to send pressOut:", error);
       }
     }
-  };// Handle right joystick movement with continuous updates
+  }; // Handle right joystick movement with continuous updates
   const sendJoystickData = useCallback(
     (x, y) => {
       if (socket && socket.readyState === WebSocket.OPEN) {
@@ -141,10 +147,10 @@ const GameController = ({ route }) => {
       }
     },
     [socket]
-  );  // Handle right joystick state changes
+  ); // Handle right joystick state changes
   const handleRightJoystickStateChange = (event) => {
     const { state } = event.nativeEvent;
-    
+
     console.log(`Gesture state changed: ${state}`);
 
     if (state === State.BEGAN) {
@@ -165,9 +171,11 @@ const GameController = ({ route }) => {
   // Handle continuous gesture movement
   const handleRightJoystickGesture = (event) => {
     const { translationX, translationY } = event.nativeEvent;
-    
-    console.log(`Gesture movement - translationX: ${translationX}, translationY: ${translationY}`);
-    
+
+    console.log(
+      `Gesture movement - translationX: ${translationX}, translationY: ${translationY}`
+    );
+
     // Calculate joystick values (-1 to 1) based on translation
     const maxRange = 70; // pixels - distance from center for full joystick range
 
@@ -188,7 +196,7 @@ const GameController = ({ route }) => {
 
     // Clamp values to ensure they're within -1 to 1
     x = Math.max(-1, Math.min(1, x));
-    y = Math.max(-1, Math.min(1, y));    // Apply deadzone to prevent drift near center
+    y = Math.max(-1, Math.min(1, y)); // Apply deadzone to prevent drift near center
     const deadzone = 0.1;
     const distanceNormalized = distance / maxRange;
     if (distanceNormalized < deadzone) {
@@ -196,7 +204,11 @@ const GameController = ({ route }) => {
       y = 0;
     }
 
-    console.log(`Calculated joystick values: x=${x.toFixed(3)}, y=${y.toFixed(3)}, distance=${distance.toFixed(1)}`);
+    console.log(
+      `Calculated joystick values: x=${x.toFixed(3)}, y=${y.toFixed(
+        3
+      )}, distance=${distance.toFixed(1)}`
+    );
 
     // Send the joystick values continuously during drag
     sendJoystickData(x, y);
@@ -219,8 +231,8 @@ const GameController = ({ route }) => {
     </LongPressGestureHandler>
   );
   return (
-    <GestureHandlerRootView style={styles.container}>      
-    <View style={styles.statusBar}>
+    <GestureHandlerRootView style={styles.container}>
+      <View style={styles.statusBar}>
         <Text style={styles.statusText}>Status: {connectionStatus}</Text>
         <TouchableOpacity
           style={[
@@ -263,15 +275,15 @@ const GameController = ({ route }) => {
             <Button label="→" value="right" style={styles.dpadHorizontal} />
           </View>
           <Button label="↓" value="down" style={styles.dpadVertical} />
-        </View>        
+        </View>
         <View style={styles.mButtons}>
           <View style={styles.mMiddle}>
             <Button label="K" value="back" style={styles.mHorizontal} />
             <View style={styles.mCenter} />
             <Button label="S" value="start" style={styles.mHorizontal} />
           </View>
-        </View>          
-        <View style={styles.actionButtons}>          
+        </View>
+        <View style={styles.actionButtons}>
           <PanGestureHandler
             onGestureEvent={handleRightJoystickGesture}
             onHandlerStateChange={handleRightJoystickStateChange}
@@ -313,7 +325,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#f0f0f0",
-  },  
+  },
   statusBar: {
     position: "absolute",
     top: 20,
